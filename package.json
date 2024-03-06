@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "name": "@dotenvx/dotenvx-script",
+  "description": "decrypt .env.vault to json",
+  "author": "@motdotla",
+  "homepage": "https://github.com/dotenvx/dotenvx-script",
+  "license": "MIT",
+  "main": "src/script.js",
+  "scripts": {
+    "standard": "standard",
+    "standard:fix": "standard --fix",
+    "test": "tap run --show-full-coverage",
+    "prerelease": "npm test",
+    "release": "standard-version"
+  },
+  "devDependencies": {
+    "standard": "^17.1.0",
+    "standard-version": "^9.5.0",
+    "tap": "^18.7.0"
+  }
+}
