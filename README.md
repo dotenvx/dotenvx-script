@@ -1,6 +1,6 @@
 # dotenvx-script
 
-decrypt `.env.vault` in the browser with a `.env.keys` file.
+decrypt `.env.vault` files in browser
 
 &nbsp;
 
