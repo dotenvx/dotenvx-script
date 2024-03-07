@@ -28,8 +28,10 @@
     DOTENV_KEY_PRODUCTION="dotenv://:key_10283719af6a30ef49050048617f4fea10c23a38021fbebeb9fd858caa01852e@dotenvx.com/vault/.env.vault?environment=production"
     `
 
-    var dotenvx = new Dotenvx(envVaultFile, envKeysFile)
-    console.log('object', dotenvx.object())
+    const dotenvx = new Dotenvx(envVaultFile, envKeysFile)
+    dotenvx.json(function(json) {
+      console.log('json', json)
+    })
   </script>
 </body>
 </html>

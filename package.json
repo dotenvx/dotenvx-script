@@ -9,7 +9,7 @@
   "scripts": {
     "standard": "standard",
     "standard:fix": "standard --fix",
-    "test": "tap run --show-full-coverage",
+    "test": "tap run",
     "prerelease": "npm test",
     "release": "standard-version"
   },
