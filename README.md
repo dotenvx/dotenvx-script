@@ -1,6 +1,6 @@
-# dotenvx-script
+![dotenvx](https://dotenvx.com/better-banner.png)
 
-decrypt `.env.vault` files in browser
+*decrypt `.env.vault` files in browser*
 
 &nbsp;
 
