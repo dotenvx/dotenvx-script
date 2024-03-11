@@ -22,7 +22,7 @@ class Dotenvx {
       json[environment]['dotenvKey'] = dotenvKey
       json[environment]['encrypted'] = encrypted
       try {
-        json[environment]['decrypted'] = await this.decrypt(encrypted, dotenvKey)
+        json[environment]['decrypted'] = await this.decrypt(encrypted, dotenvKey, environment)
       } catch (error) {
         json[environment]['decrypted'] = null
         json[environment]['error'] = error
@@ -79,9 +79,9 @@ class Dotenvx {
     return Object.keys(obj)
   }
 
-  async decrypt(encrypted, dotenvKey) {
-    const environment = this._extractEnvironment(dotenvKey)
-    const decryptKey = this.decryptKey(dotenvKey)
+  async decrypt(encrypted, dotenvKey, environment) {
+    const decryptKey = this.decryptKey(dotenvKey, environment) // make sure this is first for throw error reasons
+    const keyEnvironment = this._extractEnvironment(dotenvKey, environment)
     const rawKey = this._fromHex(decryptKey)
 
     const key = await this.crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['decrypt'])
@@ -107,24 +107,30 @@ class Dotenvx {
       return plaintext
     } catch (_error) {
       // _error from the web crypto api does not return any details so we build our own
-      const error = new Error('DECRYPTION_FAILED: Please check your DOTENV_KEY')
+      const error = new Error(`decryption failed with DOTENV_KEY_${keyEnvironment.toUpperCase()} (.env.keys)`)
       error.code = 'DECRYPTION_FAILED'
 
-      console.error(`${environment}: ${error.message}`, error)
+      console.error(`${keyEnvironment}: ${error.message}`, error)
 
       throw error
     }
   }
 
   // inputs a dotenvKey and returns the root decryptionKey portion
-  decryptKey (dotenvKey) {
+  decryptKey (dotenvKey, environment) {
     // Parse DOTENV_KEY. Format is a URI
     let uri
     try {
       uri = new URL(dotenvKey)
     } catch (error) {
       if (error.code === 'ERR_INVALID_URL') {
-        const err = new Error('INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development')
+        const err = new Error(`invalid DOTENV_KEY_${environment.toUpperCase()}. should look something like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development`)
+        err.code = 'INVALID_DOTENV_KEY'
+        throw err
+      }
+
+      if (error.message === 'Failed to construct \'URL\': Invalid URL') {
+        const err = new Error(`invalid DOTENV_KEY_${environment.toUpperCase()}. should look something like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development`)
         err.code = 'INVALID_DOTENV_KEY'
         throw err
       }
@@ -201,10 +207,23 @@ class Dotenvx {
     return null
   }
 
-  _extractEnvironment(uriString) {
-    const uri = new URL(uriString)
+  _extractEnvironment(uriString, environment) {
+    let uri
+    try {
+      uri = new URL(uriString)
+    } catch (error) {
+      throw error
+    }
 
-    return uri.searchParams.get('environment')
+    const extractedEnvironment = uri.searchParams.get('environment')
+
+    if (!extractedEnvironment) {
+      const error = new Error(`missing environment parameter in DOTENV_KEY_${environment.toUpperCase()} (.env.keys)`)
+      error.code = 'INVALID_DOTENV_KEY'
+      throw error
+    }
+
+    return extractedEnvironment
   }
 
   _fromHex(hexString) {
