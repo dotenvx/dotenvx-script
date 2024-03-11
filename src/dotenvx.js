@@ -26,6 +26,13 @@ class Dotenvx {
       } catch (error) {
         json[environment]['decrypted'] = null
       }
+
+      if (!dotenvKey) {
+        const error = new Error(`missing DOTENV_KEY_${environment.toUpperCase()} (.env.keys)`)
+        error.code = 'MISSING_DOTENV_KEY'
+        json[environment]['error'] = error
+
+      }
     }
 
     callback(json)
