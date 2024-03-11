@@ -25,13 +25,14 @@ class Dotenvx {
         json[environment]['decrypted'] = await this.decrypt(encrypted, dotenvKey)
       } catch (error) {
         json[environment]['decrypted'] = null
+        json[environment]['error'] = error
       }
 
       if (!dotenvKey) {
         const error = new Error(`missing DOTENV_KEY_${environment.toUpperCase()} (.env.keys)`)
         error.code = 'MISSING_DOTENV_KEY'
-        json[environment]['error'] = error
 
+        json[environment]['error'] = error
       }
     }
 
@@ -104,8 +105,12 @@ class Dotenvx {
       const plaintext = decoder.decode(decrypted)
 
       return plaintext
-    } catch (error) {
-      console.error(`${environment}: decrypt() failed`, error)
+    } catch (_error) {
+      // _error from the web crypto api does not return any details so we build our own
+      const error = new Error('DECRYPTION_FAILED: Please check your DOTENV_KEY')
+      error.code = 'DECRYPTION_FAILED'
+
+      console.error(`${environment}: ${error.message}`, error)
 
       throw error
     }
